@@ -1,0 +1,37 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34601.278
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeserveData Back", "DeserveData Back.csproj", "{42CC0A88-9AA0-4FE6-8314-9C08CEA6182F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLL", "..\BLL\BLL.csproj", "{EE4FB670-48E7-4AF5-85C6-232194F4DF45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "..\DAL\DAL.csproj", "{59C1EE06-1EEE-4989-B8F6-99BF5D60A4FF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{42CC0A88-9AA0-4FE6-8314-9C08CEA6182F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42CC0A88-9AA0-4FE6-8314-9C08CEA6182F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42CC0A88-9AA0-4FE6-8314-9C08CEA6182F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42CC0A88-9AA0-4FE6-8314-9C08CEA6182F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE4FB670-48E7-4AF5-85C6-232194F4DF45}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE4FB670-48E7-4AF5-85C6-232194F4DF45}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE4FB670-48E7-4AF5-85C6-232194F4DF45}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE4FB670-48E7-4AF5-85C6-232194F4DF45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59C1EE06-1EEE-4989-B8F6-99BF5D60A4FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59C1EE06-1EEE-4989-B8F6-99BF5D60A4FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59C1EE06-1EEE-4989-B8F6-99BF5D60A4FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59C1EE06-1EEE-4989-B8F6-99BF5D60A4FF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20B99FE7-E046-4B7D-8C46-4E5C4A07AFAC}
+	EndGlobalSection
+EndGlobal
