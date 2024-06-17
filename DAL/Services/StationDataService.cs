@@ -19,6 +19,13 @@ namespace DAL.Services
             _httpClient = httpClient;
         }
 
+
+
+        public async Task<IEnumerable<Station>> GetStationData()
+        {
+            return await _context.stations_fr.ToListAsync();
+        }
+
         public async Task<bool> FetchAndStoreStationsAsync()
         {
             try

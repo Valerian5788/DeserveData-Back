@@ -1,4 +1,5 @@
 ﻿using BLL.Interfaces;
+using DAL.Entities;
 using DAL.Interfaces;
 
 namespace BLL.Repository
@@ -15,6 +16,11 @@ namespace BLL.Repository
         public async Task<bool> FetchAndStoreStationsAsync()
         {
             return await _stationDataService.FetchAndStoreStationsAsync();
+        }
+
+        public async Task<IEnumerable<Station>> GetStationsData()
+        {
+            return await _stationDataService.GetStationData();
         }
     }
 }

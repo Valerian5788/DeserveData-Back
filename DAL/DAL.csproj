@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Global using\" />
     <Folder Include="Tools\" />
   </ItemGroup>
 
