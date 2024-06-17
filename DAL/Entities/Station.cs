@@ -2,9 +2,9 @@
 {
     public class Station
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
+        public int Id_Stations_fr { get; set; }
+        public string name { get; set; }
+        public float lon { get; set; }
+        public float lat { get; set; }
     }
 }

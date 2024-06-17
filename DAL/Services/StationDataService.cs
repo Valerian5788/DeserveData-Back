@@ -3,6 +3,7 @@ using DAL.Entities;
 using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using DAL.Interfaces;
+using System.Text.Json.Serialization;
 
 
 namespace DAL.Services
@@ -25,27 +26,25 @@ namespace DAL.Services
                 var apiUrl = "https://api.irail.be/v1/stations/?format=json&lang=fr";
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse>(apiUrl);
 
-                if (response != null && response.Stations != null)
+                if (response != null && response.Station != null)
                 {
-                    foreach (var stationData in response.Stations)
+                    foreach (var stationData in response.Station)
                     {
                         // Check if station already exists in database
-                        var existingStation = await _context.Stations.FirstOrDefaultAsync(s => s.Name == stationData.Name);
+                        var existingStationNames = new HashSet<string>(await _context.stations_fr.Select(s => s.name).ToListAsync());
 
-                        if (existingStation == null)
+                        if (!existingStationNames.Contains(stationData.Name))
                         {
-                            // Create new station entity
                             var station = new Station
                             {
-                                Name = stationData.Name,
-                                Longitude = Convert.ToDouble(stationData.LocationX),
-                                Latitude = Convert.ToDouble(stationData.LocationY)
+                                name = stationData.Name,
+                                lon = stationData.LocationX,
+                                lat = stationData.LocationY
                             };
 
                             // Add station to context
-                            _context.Stations.Add(station);
+                            _context.stations_fr.Add(station);
                         }
-                        // You can add logic here if you want to update existing stations
 
                     }
 
@@ -60,7 +59,7 @@ namespace DAL.Services
             }
             catch (Exception ex)
             {
-                // Handle exceptions (log, etc.)
+                Console.WriteLine($"An error occurred: {ex.Message}");
                 return false;
             }
         }
@@ -68,14 +67,15 @@ namespace DAL.Services
         // Inner class to deserialize API response
         private class ApiResponse
         {
-            public List<StationData> Stations { get; set; }
+            [JsonPropertyName("station")] //maps the C# property to the JSON key 
+            public List<StationData> Station { get; set; }
         }
 
         private class StationData
         {
             public string Name { get; set; }
-            public string LocationX { get; set; }
-            public string LocationY { get; set; }
+            public float LocationX { get; set; }
+            public float LocationY { get; set; }
         }
     }
 }

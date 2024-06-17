@@ -2,5 +2,6 @@
 {
     public interface IStationDataRepository
     {
+        Task<bool> FetchAndStoreStationsAsync();
     }
 }

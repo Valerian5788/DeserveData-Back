@@ -1,13 +1,20 @@
 ﻿using BLL.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using DAL.Interfaces;
 
 namespace BLL.Repository
 {
     public class StationDataRepo : IStationDataRepository
     {
+        private readonly IStationDataService _stationDataService;
+        public StationDataRepo(IStationDataService stationDataService)
+        {
+            _stationDataService = stationDataService;
+        }
+
+
+        public async Task<bool> FetchAndStoreStationsAsync()
+        {
+            return await _stationDataService.FetchAndStoreStationsAsync();
+        }
     }
 }
