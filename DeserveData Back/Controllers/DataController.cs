@@ -30,5 +30,12 @@ namespace DeserveData_Back.Controllers
             return stations != null ? Ok(stations) : NotFound();
         }
 
+        [HttpPost("StoreFacilitiesData")]   
+        public async Task<IActionResult> FetchFacilitiesData()
+        {
+            bool result = await _stationDataRepository.FetchAndStoreFacilitiesAsync();
+            return result ? Ok("Data fetched and stored successfully") : BadRequest("Failed to fetch and store data");
+        }
+
     }
 }

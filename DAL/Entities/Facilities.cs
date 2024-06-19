@@ -6,6 +6,7 @@
         public bool PaidToilets { get; set; }
         public bool Taxi { get; set; }
         public bool LuggageLockers { get; set; }
+        public bool FreeToilets { get; set; } 
         public bool TVMCount { get; set; } 
         public bool Wifi { get; set; }
         public bool BikesPointPresence { get; set; }

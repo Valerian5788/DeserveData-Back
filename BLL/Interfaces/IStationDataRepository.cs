@@ -7,5 +7,6 @@ namespace BLL.Interfaces
         Task<bool> FetchAndStoreStationsAsync(string lang);
 
         Task<IEnumerable<Station>> GetStationsData();
+        Task<bool> FetchAndStoreFacilitiesAsync();
     }
 }

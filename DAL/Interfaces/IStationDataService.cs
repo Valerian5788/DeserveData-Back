@@ -6,5 +6,6 @@ namespace DAL.Interfaces
     {
         Task<bool> FetchAndStoreStationsAsync(string lang);
         Task<IEnumerable<Station>> GetStationData();
+        Task<bool> FetchAndStoreFacilitiesAsync();
     }
 }

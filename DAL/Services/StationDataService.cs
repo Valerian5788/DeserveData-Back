@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using Microsoft.EntityFrameworkCore;
 using DAL.Interfaces;
 using System.Text.Json.Serialization;
+using System.Text.Json;
 
 
 namespace DAL.Services
@@ -97,6 +98,96 @@ namespace DAL.Services
             public string name { get; set; }
             public float locationX { get; set; }
             public float locationY { get; set; }
+        }
+
+        public async Task<bool> FetchAndStoreFacilitiesAsync()
+        {
+            try
+            {
+                var facilitiesPath = "../DAL/Intern Data/facilities.json";
+                var facilitiesJson = await File.ReadAllTextAsync(facilitiesPath);
+                var facilitiesData = JsonSerializer.Deserialize<List<FacilityData>>(facilitiesJson);
+
+                if (facilitiesData == null) return false;
+
+                foreach (var facility in facilitiesData)
+                {
+                    // Attempt to find the station by name_fr, then name_en, and finally name_nl
+                    var station = await _context.stations
+                        .FirstOrDefaultAsync(s => s.name_fr == facility.station || s.name_eng == facility.station || s.name_nl == facility.station);
+
+                    if (station == null)
+                    {
+                        Console.WriteLine($"Station not found for {facility.station}");
+                        continue; // Skip this facility if the station is not found
+                    }
+
+                    // Attempt to parse the number of parking places for PMR
+                    var parkingPlacesForPMRString = facility.facilities.FirstOrDefault(f => f.name == "Number of Parking Places for PMR")?.value;
+                    int parkingPlacesForPMR = 0;
+                    if (!string.IsNullOrEmpty(parkingPlacesForPMRString))
+                    {
+                        // Split the string on the colon and parse the last part
+                        var parts = parkingPlacesForPMRString.Split(':');
+                        if (parts.Length > 1 && int.TryParse(parts.Last().Trim(), out int parsedNumber))
+                        {
+                            parkingPlacesForPMR = parsedNumber;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"Unable to parse number from string: '{parkingPlacesForPMRString}'");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Parking Places for PMR string is null or empty.");
+                    }
+
+                    var stationFacilities = new Facilities
+                    {
+                        Id_Station = station.Id_Station,
+                        PaidToilets = facility.facilities.Any(f => f.name == "Paid Toilets"),
+                        FreeToilets = facility.facilities.Any(f => f.name == "Free Toilets"), 
+                        Taxi = facility.facilities.Any(f => f.name == "Location of taxis"), 
+                        LuggageLockers = facility.facilities.Any(f => f.name == "Luggage Lockers"),
+                        TVMCount = facility.facilities.Any(f => f.name == "TVM Count"),
+                        Wifi = facility.facilities.Any(f => f.name == "Wifi presence"), 
+                        BikesPointPresence = facility.facilities.Any(f => f.name == "Presence of the Bikes point"), 
+                        CambioInformation = facility.facilities.Any(f => f.name == "Cambio information"),
+                        ConnectingBusesPresence = facility.facilities.Any(f => f.name == "Presence of connecting buses"),
+                        ConnectingTramPresence = facility.facilities.Any(f => f.name == "Presence of connecting tram"),
+                        ParkingPlacesForPMR = parkingPlacesForPMR, 
+                        PMRToilets = facility.facilities.Any(f => f.name == "PMR Toilets"),
+                        Escalator = facility.facilities.Any(f => f.name == "Escalator"),
+                        BlueBikesPresence = facility.facilities.Any(f => f.name == "Blue Bikes presence"), 
+                        PMRAssistance = facility.facilities.Any(f => f.name == "Has PMR Assistance"), 
+                        LiftOnPlatform = facility.facilities.Any(f => f.name == "Lift on the platform"),
+                    };
+
+                    _context.facilities.Add(stationFacilities);
+                }
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Inner class to deserialize facilities.json
+        private class FacilityData
+        {
+            public string station { get; set; }
+            public List<FacilityDetail> facilities { get; set; }
+        }
+
+        private class FacilityDetail
+        {
+            public string name { get; set; }
+            public string value { get; set; }
         }
     }
 }

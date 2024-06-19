@@ -23,5 +23,10 @@ namespace BLL.Repository
         {
             return await _stationDataService.GetStationData();
         }
+
+        public async Task<bool> FetchAndStoreFacilitiesAsync()
+        {
+            return await _stationDataService.FetchAndStoreFacilitiesAsync();
+        }
     }
 }
