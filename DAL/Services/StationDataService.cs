@@ -23,36 +23,48 @@ namespace DAL.Services
 
         public async Task<IEnumerable<Station>> GetStationData()
         {
-            return await _context.stations_fr.ToListAsync();
+            return await _context.stations.ToListAsync();
         }
 
-        public async Task<bool> FetchAndStoreStationsAsync()
+        public async Task<bool> FetchAndStoreStationsAsync(string lang)
         {
             try
             {
-                var apiUrl = "https://api.irail.be/v1/stations/?format=json&lang=fr";
+                var apiUrl = $"https://api.irail.be/v1/stations/?format=json&lang={lang}";
+
                 var response = await _httpClient.GetFromJsonAsync<ApiResponse>(apiUrl);
 
                 if (response != null && response.Station != null)
                 {
                     foreach (var stationData in response.Station)
                     {
-                        // Check if station already exists in database
-                        var existingStationNames = new HashSet<string>(await _context.stations_fr.Select(s => s.name).ToListAsync());
+                        var existingStation = await _context.stations.FirstOrDefaultAsync(s => s.Official_Station_id == stationData.id); // Assuming each station has a unique Id
 
-                        if (!existingStationNames.Contains(stationData.Name))
+                        if (existingStation == null)
                         {
-                            var station = new Station
+                            // If the station doesn't exist, create a new one
+                            existingStation = new Station
                             {
-                                name = stationData.Name,
-                                lon = stationData.LocationX,
-                                lat = stationData.LocationY
+                                Official_Station_id = stationData.id,
+                                lon = stationData.locationX,
+                                lat = stationData.locationY
                             };
-
-                            // Add station to context
-                            _context.stations_fr.Add(station);
+                            _context.stations.Add(existingStation);
                         }
 
+                        // Update the name based on the language
+                        switch (lang.ToLower())
+                        {
+                            case "fr":
+                                existingStation.name_fr = stationData.name;
+                                break;
+                            case "en":
+                                existingStation.name_eng = stationData.name;
+                                break;
+                            case "nl":
+                                existingStation.name_nl = stationData.name;
+                                break;
+                        }
                     }
 
                     // Save changes to database
@@ -71,6 +83,7 @@ namespace DAL.Services
             }
         }
 
+
         // Inner class to deserialize API response
         private class ApiResponse
         {
@@ -80,9 +93,10 @@ namespace DAL.Services
 
         private class StationData
         {
-            public string Name { get; set; }
-            public float LocationX { get; set; }
-            public float LocationY { get; set; }
+            public string id { get; set; }
+            public string name { get; set; }
+            public float locationX { get; set; }
+            public float locationY { get; set; }
         }
     }
 }

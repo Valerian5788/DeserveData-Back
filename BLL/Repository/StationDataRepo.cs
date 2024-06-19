@@ -13,9 +13,10 @@ namespace BLL.Repository
         }
 
 
-        public async Task<bool> FetchAndStoreStationsAsync()
+        public async Task<bool> FetchAndStoreStationsAsync(string lang)
         {
-            return await _stationDataService.FetchAndStoreStationsAsync();
+
+            return await _stationDataService.FetchAndStoreStationsAsync(lang);
         }
 
         public async Task<IEnumerable<Station>> GetStationsData()

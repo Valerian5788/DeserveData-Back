@@ -2,7 +2,7 @@
 {
     public class Facilities
     {
-        public int Id_Stations_fr { get; set; }
+        public int Id_Station { get; set; }
         public bool PaidToilets { get; set; }
         public bool Taxi { get; set; }
         public bool LuggageLockers { get; set; }

@@ -4,7 +4,7 @@ namespace DAL.Interfaces
 {
     public interface IStationDataService
     {
-        Task<bool> FetchAndStoreStationsAsync();
+        Task<bool> FetchAndStoreStationsAsync(string lang);
         Task<IEnumerable<Station>> GetStationData();
     }
 }

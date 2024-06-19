@@ -15,12 +15,13 @@ namespace DeserveData_Back.Controllers
             _stationDataRepository = stationDataRepository;
         }
 
-        [HttpGet("StoreStationData")]
-        public async Task<IActionResult> FetchStationsData()
+        [HttpPost("StoreStationData/{lang}")]
+        public async Task<IActionResult> FetchStationsData_Fr(string lang)
         {
-            bool result = await _stationDataRepository.FetchAndStoreStationsAsync();
+            bool result = await _stationDataRepository.FetchAndStoreStationsAsync(lang);
             return result ? Ok("Data fetched and stored successfully") : BadRequest("Failed to fetch and store data");
         }
+        
 
         [HttpGet("GetStationsData")]
         public async Task<IActionResult> GetStationsData()
