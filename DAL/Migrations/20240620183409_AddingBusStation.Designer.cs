@@ -3,6 +3,7 @@ using DAL.AppDbContextFolder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240620183409_AddingBusStation")]
+    partial class AddingBusStation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,28 +24,28 @@ namespace DAL.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("DAL.Entities.BusStop", b =>
+            modelBuilder.Entity("DAL.Entities.BusStopByCityName", b =>
                 {
-                    b.Property<string>("StopId")
+                    b.Property<string>("city_name")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<double>("Lat")
+                    b.Property<double>("lat")
                         .HasColumnType("float");
 
-                    b.Property<double>("Lon")
+                    b.Property<double>("lon")
                         .HasColumnType("float");
 
-                    b.Property<string>("Provider")
+                    b.Property<string>("stop_id")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("StopName")
+                    b.Property<string>("stop_name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("StopId");
+                    b.HasKey("city_name");
 
-                    b.ToTable("busStop");
+                    b.ToTable("busStopByCityNames");
                 });
 
             modelBuilder.Entity("DAL.Entities.Facilities", b =>

@@ -17,12 +17,17 @@ namespace BLL.Repository
         {
             _busStopService = BusStopService;
         }
-        public object GetBusStopsAroundStation(string city_name, double lat, double lon, double radius)
+        public object GetBusStopsAroundStation(double lat, double lon, double radius)
         {
-            object retour = _busStopService.GetBusStopsAroundStation(city_name, lat, lon, radius).Result;
+            object retour = _busStopService.GetBusStopsAroundStation(lat, lon, radius).Result;
             string jsonString = JsonSerializer.Serialize(retour, new JsonSerializerOptions { WriteIndented = true });
             Console.WriteLine(jsonString);
             return retour;
+        }
+
+        public Task<bool> ImportBusStopsFromFileTec()
+        {
+            return _busStopService.ImportBusStopsFromFileTec();
         }
     }
 }

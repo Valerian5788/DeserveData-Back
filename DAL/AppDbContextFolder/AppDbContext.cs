@@ -9,6 +9,8 @@ namespace DAL.AppDbContextFolder
         public DbSet<Station> stations { get; set; }
         public DbSet<Facilities> facilities { get; set; }
 
+        public DbSet<BusStop> busStop { get; set; }
+
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
 
@@ -16,10 +18,13 @@ namespace DAL.AppDbContextFolder
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Station>()
-                .HasKey(s => s.Id_Station); // Assuming Id_Station is the primary key in Station
+                .HasKey(s => s.Id_Station); 
 
             modelBuilder.Entity<Facilities>()
-                .HasKey(f => f.Id_Station); // Assuming Id_Station is both the primary key and foreign key in Facilities
+                .HasKey(f => f.Id_Station);
+
+            modelBuilder.Entity<BusStop>()
+                .HasKey(b => b.StopId);
 
             // Configure the one-to-one relationship between Station and Facilities
             modelBuilder.Entity<Station>()

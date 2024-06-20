@@ -8,6 +8,7 @@ namespace BLL.Interfaces
 {
     public interface IBusStopRepository
     {
-        object GetBusStopsAroundStation(string city_name, double lat, double lon, double radius);
+        object GetBusStopsAroundStation(double lat, double lon, double radius);
+        Task<bool> ImportBusStopsFromFileTec();
     }
 }

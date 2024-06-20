@@ -15,9 +15,16 @@ namespace DeserveData_Back.Controllers
 
 
         [HttpGet]
-        public IActionResult SeeBusStopAroundStation(string city_name, double lat, double lon, double radius)
+        public IActionResult SeeBusStopAroundStation(double lat, double lon, double radius)
         {
-            return Ok(_busStopRepository.GetBusStopsAroundStation(city_name, lat, lon, radius));
+            return Ok(_busStopRepository.GetBusStopsAroundStation(lat, lon, radius));
+        }
+
+        [HttpPost("FetchDataTec")]
+        public async Task<IActionResult> ImportBusStops()
+        {
+            bool success = await _busStopRepository.ImportBusStopsFromFileTec();
+            return success ? Ok("Data fetched and stored successfully") : BadRequest("Failed to fetch and store data");
         }
 
     }

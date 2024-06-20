@@ -1,5 +1,9 @@
 ﻿
+using DAL.AppDbContextFolder;
+using DAL.Entities;
 using DAL.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 using System.Text.Json;
 
 namespace DAL.Services
@@ -7,13 +11,86 @@ namespace DAL.Services
     public class BusStopService : IBusStopService
     {
         private readonly HttpClient _httpClient;
+        private readonly AppDbContext _context;
 
-        public BusStopService(HttpClient httpClient)
+        public BusStopService(HttpClient httpClient, AppDbContext context)
         {
             _httpClient = httpClient;
+            _context = context;
         }
 
-        public async Task<object> GetBusStopsAroundStation(string city_name, double lat, double lon, double radius)
+        public async Task<bool> ImportBusStopsFromFileTec()
+        {
+            try
+            {
+                string filePath = "../DAL/Intern Data/stops.txt";
+                using (var reader = new StreamReader(filePath))
+                {
+                    reader.ReadLine(); // Skip header
+
+                    while (!reader.EndOfStream)
+                    {
+                        var line = reader.ReadLine();
+                        var values = line.Split(',');
+
+                        if (values.Length < 6) // Assuming there should be at least 6 columns
+                        {
+                            Console.WriteLine($"Skipping malformed line: {line}");
+                            continue;
+                        }
+
+                        var stopId = values[0];
+                        var stopName = values[2].Trim('"');
+
+                        // Safely parse latitude and longitude
+                        if (!double.TryParse(values[4], NumberStyles.Any, CultureInfo.InvariantCulture, out double lat))
+                        {
+                            Console.WriteLine($"Skipping line due to invalid latitude: {line}");
+                            continue;
+                        }
+
+                        if (!double.TryParse(values[5], NumberStyles.Any, CultureInfo.InvariantCulture, out double lon))
+                        {
+                            Console.WriteLine($"Skipping line due to invalid longitude: {line}");
+                            continue;
+                        }
+
+                        var existingStop = await _context.busStop.FindAsync(stopId);
+                        if (existingStop == null)
+                        {
+                            _context.busStop.Add(new BusStop
+                            {
+                                StopId = stopId,
+                                StopName = stopName,
+                                Lat = lat,
+                                Lon = lon,
+                                Provider = "Tec"
+                            });
+                        }
+                        else
+                        {
+                            // Update existing record if needed
+                            existingStop.StopName = stopName;
+                            existingStop.Lat = lat;
+                            existingStop.Lon = lon;
+                            existingStop.Provider = "Tec";
+                        }
+                    }
+
+                    await _context.SaveChangesAsync();
+                }
+                return true; // Return true to indicate success
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return false; // Return false if an exception occurs
+            }
+        }
+
+
+
+        public async Task<object> GetBusStopsAroundStation(double lat, double lon, double radius)
         {
             // Define the zone around the given coordinates
             double min_lat = lat - radius;
@@ -21,45 +98,20 @@ namespace DAL.Services
             double min_lon = lon - radius;
             double max_lon = lon + radius;
 
-            // Construct the API URL with the search parameters
-            string url = $"https://www.odwb.be/api/explore/v2.1/catalog/datasets/gtfs_tec_stops/records?select=*&where=stop_name%20like%20%27{city_name.ToUpper()}%27&order_by=stop_name&limit=99";
-
             try
             {
-                var response = await _httpClient.GetAsync(url);
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Response succces");
-                    var content = await response.Content.ReadAsStringAsync();
-                    var data = JsonSerializer.Deserialize<ApiResponse>(content);
-
-                    var stopsInZone = new List<StopInfo>();
-                    if (data != null && data.results != null)
+                // Query the database for bus stops within the specified bounds
+                var stopsInZone = await _context.busStop
+                    .Where(bs => bs.Lat >= min_lat && bs.Lat <= max_lat && bs.Lon >= min_lon && bs.Lon <= max_lon)
+                    .Select(bs => new StopInfo
                     {
-                        Console.WriteLine("Data is not null");
-                        foreach (var results in data.results)
-                        {
-                            if (results.stop_id != null && results.stop_name != null && results.stop_coordinates != null &&
-                                min_lat < results.stop_coordinates.lat && results.stop_coordinates.lat < max_lat &&
-                                min_lon < results.stop_coordinates.lon && results.stop_coordinates.lon < max_lon)
-                            {
-                                Console.WriteLine("Adding stop in zone");
-                                stopsInZone.Add(new StopInfo
-                                {
-                                    stop_id = results.stop_id,
-                                    stop_name = results.stop_name,
-                                    stop_coordinates = results.stop_coordinates
-                                });
-                            }
-                        }
-                    }
+                        stop_id = bs.StopId,
+                        stop_name = bs.StopName,
+                        stop_coordinates = new Coordinates { lat = bs.Lat, lon = bs.Lon }
+                    })
+                    .ToListAsync();
 
-                    return new { ArretAutourZone = stopsInZone, TotalDesArretsDansLaZone = stopsInZone.Count };
-                }
-                else
-                {
-                    return new { Error = $"Erreur lors de la récupération des données API, status code: {response.StatusCode}" };
-                }
+                return new { StopsInZone = stopsInZone, TotalStopsInZone = stopsInZone.Count };
             }
             catch (Exception ex)
             {
@@ -67,29 +119,20 @@ namespace DAL.Services
             }
         }
 
-        private class ApiResponse
-        {
-            public List<Result> results { get; set; }
-        }
-
-        private class Result
-        {
-            public string stop_id { get; set; }
-            public string stop_name { get; set; }
-            public Coordinates stop_coordinates { get; set; }
-        }
-
-        private class Coordinates
+        // Ensure the Coordinates class is accessible
+        public class Coordinates
         {
             public double lat { get; set; }
             public double lon { get; set; }
         }
 
-        private class StopInfo
+        // Ensure the StopInfo class is accessible
+        public class StopInfo
         {
             public string stop_id { get; set; }
             public string stop_name { get; set; }
             public Coordinates stop_coordinates { get; set; }
         }
+
     }
 }
