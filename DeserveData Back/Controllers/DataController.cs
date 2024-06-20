@@ -1,5 +1,4 @@
 ﻿using BLL.Interfaces;
-using DAL.Entities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers

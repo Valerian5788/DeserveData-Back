@@ -24,6 +24,9 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<IStationDataRepository, StationDataRepo>();
 builder.Services.AddScoped<IStationDataService, StationDataService>();
+builder.Services.AddScoped<IBusStopService, BusStopService>();
+builder.Services.AddScoped<IBusStopRepository, BusStopRepo>();
+
 
 
 
