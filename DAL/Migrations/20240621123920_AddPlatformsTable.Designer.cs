@@ -3,6 +3,7 @@ using DAL.AppDbContextFolder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240621123920_AddPlatformsTable")]
+    partial class AddPlatformsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -105,14 +108,10 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Platforms", b =>
                 {
-                    b.Property<string>("Perron_Id")
+                    b.Property<string>("Id_Quai")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Hauteur")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Id_Quai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -127,7 +126,11 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Perron_Id");
+                    b.Property<string>("Quai")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id_Quai");
 
                     b.HasIndex("Id_Station");
 

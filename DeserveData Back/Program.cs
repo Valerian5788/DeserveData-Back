@@ -26,6 +26,8 @@ builder.Services.AddScoped<IStationDataRepository, StationDataRepo>();
 builder.Services.AddScoped<IStationDataService, StationDataService>();
 builder.Services.AddScoped<IBusStopService, BusStopService>();
 builder.Services.AddScoped<IBusStopRepository, BusStopRepo>();
+builder.Services.AddScoped<IPlatformHeightRepository, PlatformHeightRepo>();
+builder.Services.AddScoped<IPlatformHeightService, PlatformHeightService>();
 
 
 
