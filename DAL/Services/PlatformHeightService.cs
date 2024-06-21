@@ -4,6 +4,9 @@ using DAL.AppDbContextFolder;
 using DAL.Entities;
 using DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Buffers.Text;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 
 namespace DAL.Services
@@ -18,6 +21,31 @@ namespace DAL.Services
             _context = context;
             _httpClient = httpClient;
         }
+        private string NormalizeAndToUpper(string input)
+        {
+            // First, normalize the string to remove diacritics and convert to uppercase
+            var normalizedString = input.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            var upperCaseString = stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToUpperInvariant();
+
+            // Now, standardize spaces around parentheses
+            upperCaseString = upperCaseString.Replace(" (", "(").Replace("( ", "(");
+            upperCaseString = upperCaseString.Replace(" )", ")").Replace(") ", ")");
+
+            return upperCaseString;
+        }
+
+
+
 
         public async Task<bool> FetchAndStoreAllPlatformData()
         {
@@ -42,8 +70,19 @@ namespace DAL.Services
                         totalCount = data.total_count;
                         foreach (var platformData in data.results)
                         {
-                            var matchingStation = await _context.stations
-                                .FirstOrDefaultAsync(s => s.name_fr == platformData.LongNameFrench);
+                            var normalizedPlatformNameFr = NormalizeAndToUpper(platformData.LongNameFrench);
+                            var normalizedPlatformNameNl = NormalizeAndToUpper(platformData.LongNameDutch);
+
+                            var stations = await _context.stations.ToListAsync();
+                            var matchingStation = stations
+                                .FirstOrDefault(s => NormalizeAndToUpper(s.name_fr) == normalizedPlatformNameFr);
+
+                            // If no matching station is found using the French name, try the Dutch name
+                            if (matchingStation == null)
+                            {
+                                matchingStation = stations
+                                    .FirstOrDefault(s => NormalizeAndToUpper(s.name_nl) == normalizedPlatformNameNl);
+                            }
 
                             if (matchingStation != null)
                             {
@@ -68,10 +107,11 @@ namespace DAL.Services
                             }
                             else
                             {
-                                Console.WriteLine($"station : {platformData.LongNameFrench} n'a pas été trouvée");
+                                Console.WriteLine($"Station not found for platform: {platformData.LongNameFrench} / {platformData.LongNameDutch}");
                                 // Handle the case where no matching station is found
                             }
                         }
+
                         await _context.SaveChangesAsync();
 
                         totalFetched += data.results.Count;
