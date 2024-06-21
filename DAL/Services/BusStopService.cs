@@ -90,13 +90,38 @@ namespace DAL.Services
 
 
 
-        public async Task<object> GetBusStopsAroundStation(double lat, double lon, double radius)
+        // Convert degrees to radians
+        private double ToRadians(double degrees)
+        {
+            return degrees * Math.PI / 180.0;
+        }
+
+        // Calculate the Haversine distance between two points
+        private double Haversine(double lat1, double lon1, double lat2, double lon2)
+        {
+            const double EarthRadiusKm = 6371.0;
+
+            double dLat = ToRadians(lat2 - lat1);
+            double dLon = ToRadians(lon2 - lon1);
+
+            lat1 = ToRadians(lat1);
+            lat2 = ToRadians(lat2);
+
+            double a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                       Math.Sin(dLon / 2) * Math.Sin(dLon / 2) * Math.Cos(lat1) * Math.Cos(lat2);
+            double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+            return EarthRadiusKm * c;
+        }
+
+        public async Task<object> GetBusStopsAroundStation(double lat, double lon, double radiusKm)
         {
             // Define the zone around the given coordinates
-            double min_lat = lat - radius;
-            double max_lat = lat + radius;
-            double min_lon = lon - radius;
-            double max_lon = lon + radius;
+            const double KmToDegrees = 0.009; // Approximate conversion for small distances
+            double radiusDegrees = radiusKm * KmToDegrees;
+            double min_lat = lat - radiusDegrees;
+            double max_lat = lat + radiusDegrees;
+            double min_lon = lon - radiusDegrees;
+            double max_lon = lon + radiusDegrees;
 
             try
             {
@@ -111,28 +136,32 @@ namespace DAL.Services
                     })
                     .ToListAsync();
 
-                return new { StopsInZone = stopsInZone, TotalStopsInZone = stopsInZone.Count };
+                // Filter stops to only include those within the radius
+                var stopsInCircle = stopsInZone
+                    .Where(stop => Haversine(lat, lon, stop.stop_coordinates.lat, stop.stop_coordinates.lon) <= radiusKm)
+                    .ToList();
+
+                return new { StopsInZone = stopsInCircle, TotalStopsInZone = stopsInCircle.Count };
             }
             catch (Exception ex)
             {
                 return new { Error = $"An error occurred: {ex.Message}" };
             }
         }
+    }
 
-        // Ensure the Coordinates class is accessible
-        public class Coordinates
-        {
-            public double lat { get; set; }
-            public double lon { get; set; }
-        }
+    // Ensure the Coordinates class is accessible
+    public class Coordinates
+    {
+        public double lat { get; set; }
+        public double lon { get; set; }
+    }
 
-        // Ensure the StopInfo class is accessible
-        public class StopInfo
-        {
-            public string stop_id { get; set; }
-            public string stop_name { get; set; }
-            public Coordinates stop_coordinates { get; set; }
-        }
-
+    // Ensure the StopInfo class is accessible
+    public class StopInfo
+    {
+        public string stop_id { get; set; }
+        public string stop_name { get; set; }
+        public Coordinates stop_coordinates { get; set; }
     }
 }
