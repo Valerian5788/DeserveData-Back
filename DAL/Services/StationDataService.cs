@@ -5,6 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using DAL.Interfaces;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using System.Globalization;
+using System.Text;
 
 
 namespace DAL.Services
@@ -100,8 +102,37 @@ namespace DAL.Services
             public float locationY { get; set; }
         }
 
+        private string NormalizeStationName(string name)
+        {
+            // Normalize the string to remove diacritics and convert to uppercase
+            var normalizedString = name.Normalize(NormalizationForm.FormD);
+            var stringBuilder = new StringBuilder();
+
+            foreach (var c in normalizedString)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+                {
+                    stringBuilder.Append(c);
+                }
+            }
+
+            var upperCaseString = stringBuilder.ToString().Normalize(NormalizationForm.FormC).ToUpperInvariant();
+
+            // Remove all white spaces
+            upperCaseString = upperCaseString.Replace(" ", "");
+
+            // Replace opening parenthesis with '-' and remove closing parenthesis
+            upperCaseString = upperCaseString.Replace("(", "-").Replace(")", "");
+
+            return upperCaseString;
+        }
+
+
+
+
         public async Task<bool> FetchAndStoreFacilitiesAsync()
         {
+            List<string> stationsNotFound = new List<string>(); // List to collect names of stations not found
             try
             {
                 var facilitiesPath = "../DAL/Intern Data/facilities.json";
@@ -112,13 +143,18 @@ namespace DAL.Services
 
                 foreach (var facility in facilitiesData)
                 {
-                    // Attempt to find the station by name_fr, then name_en, and finally name_nl
-                    var station = await _context.stations
-                        .FirstOrDefaultAsync(s => s.name_fr == facility.station || s.name_eng == facility.station || s.name_nl == facility.station);
+                    var normalizedFacilityName = NormalizeStationName(facility.station);
+
+                    var stations = await _context.stations.ToListAsync();
+                    // Attempt to find the station by normalized names
+                    var station =   stations
+                        .FirstOrDefault(s => NormalizeStationName(s.name_fr) == normalizedFacilityName ||
+                                                  NormalizeStationName(s.name_eng) == normalizedFacilityName ||
+                                                  NormalizeStationName(s.name_nl) == normalizedFacilityName);
 
                     if (station == null)
                     {
-                        Console.WriteLine($"Station not found for {facility.station}");
+                        stationsNotFound.Add(facility.station);
                         continue; // Skip this facility if the station is not found
                     }
 
@@ -168,6 +204,16 @@ namespace DAL.Services
                 }
 
                 await _context.SaveChangesAsync();
+
+                // After processing all facilities
+                if (stationsNotFound.Any())
+                {
+                    Console.WriteLine("Stations not found:");
+                    foreach (var stationName in stationsNotFound)
+                    {
+                        Console.WriteLine(stationName);
+                    }
+                }
                 return true;
             }
             catch (Exception ex)
