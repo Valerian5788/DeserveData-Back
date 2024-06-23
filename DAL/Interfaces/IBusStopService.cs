@@ -9,6 +9,6 @@ namespace DAL.Interfaces
     public interface IBusStopService
     {
         Task<object> GetBusStopsAroundStation(double lat, double lon, double radius);
-        Task<bool> ImportBusStopsFromFileTec();
+        Task<bool> ImportBusStopsFromMultipleFiles();
     }
 }

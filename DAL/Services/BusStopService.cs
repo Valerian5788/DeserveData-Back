@@ -19,66 +19,76 @@ namespace DAL.Services
             _context = context;
         }
 
-        public async Task<bool> ImportBusStopsFromFileTec()
+        public async Task<bool> ImportBusStopsFromMultipleFiles()
         {
+            string[] filePaths = 
+            [
+                "../DAL/Intern Data/stops_TEC.txt",
+                "../DAL/Intern Data/stops_STIB.txt",
+                "../DAL/Intern Data/stops_LIJN.txt"
+            ];
+
             try
             {
-                string filePath = "../DAL/Intern Data/stops.txt";
-                using (var reader = new StreamReader(filePath))
+                foreach (var filePath in filePaths)
                 {
-                    reader.ReadLine(); // Skip header
-
-                    while (!reader.EndOfStream)
+                    string provider = Path.GetFileNameWithoutExtension(filePath).Split('_').Last().ToUpperInvariant();
+                    using (var reader = new StreamReader(filePath))
                     {
-                        var line = reader.ReadLine();
-                        var values = line.Split(',');
+                        reader.ReadLine(); // Skip header
 
-                        if (values.Length < 6) // Assuming there should be at least 6 columns
+                        while (!reader.EndOfStream)
                         {
-                            Console.WriteLine($"Skipping malformed line: {line}");
-                            continue;
-                        }
+                            var line = reader.ReadLine();
+                            var values = line.Split(',');
 
-                        var stopId = values[0];
-                        var stopName = values[2].Trim('"');
-
-                        // Safely parse latitude and longitude
-                        if (!double.TryParse(values[4], NumberStyles.Any, CultureInfo.InvariantCulture, out double lat))
-                        {
-                            Console.WriteLine($"Skipping line due to invalid latitude: {line}");
-                            continue;
-                        }
-
-                        if (!double.TryParse(values[5], NumberStyles.Any, CultureInfo.InvariantCulture, out double lon))
-                        {
-                            Console.WriteLine($"Skipping line due to invalid longitude: {line}");
-                            continue;
-                        }
-
-                        var existingStop = await _context.busStop.FindAsync(stopId);
-                        if (existingStop == null)
-                        {
-                            _context.busStop.Add(new BusStop
+                            if (values.Length < 6) // Assuming there should be at least 6 columns
                             {
-                                StopId = stopId,
-                                StopName = stopName,
-                                Lat = lat,
-                                Lon = lon,
-                                Provider = "Tec"
-                            });
-                        }
-                        else
-                        {
-                            // Update existing record if needed
-                            existingStop.StopName = stopName;
-                            existingStop.Lat = lat;
-                            existingStop.Lon = lon;
-                            existingStop.Provider = "Tec";
+                                Console.WriteLine($"Skipping malformed line: {line}");
+                                continue;
+                            }
+
+                            var stopId = values[0].Trim('"');
+                            var stopName = values[2].Trim('"');
+
+                            // Safely parse latitude and longitude
+                            if (!double.TryParse(values[4].Trim('"'), NumberStyles.Any, CultureInfo.InvariantCulture, out double lat))
+                            {
+                                Console.WriteLine($"Skipping line due to invalid latitude: {line}");
+                                continue;
+                            }
+
+                            if (!double.TryParse(values[5].Trim('"'), NumberStyles.Any, CultureInfo.InvariantCulture, out double lon))
+                            {
+                                Console.WriteLine($"Skipping line due to invalid longitude: {line}");
+                                continue;
+                            }
+
+                            var existingStop = await _context.busStop.FindAsync(stopId);
+                            if (existingStop == null)
+                            {
+                                _context.busStop.Add(new BusStop
+                                {
+                                    StopId = stopId,
+                                    StopName = stopName,
+                                    Lat = lat,
+                                    Lon = lon,
+                                    Provider = provider
+                                });
+                            }
+                            else
+                            {
+                                // Update existing record if needed
+                                existingStop.StopName = stopName;
+                                existingStop.Lat = lat;
+                                existingStop.Lon = lon;
+                                existingStop.Provider = provider;
+                            }
                         }
                     }
-
-                    await _context.SaveChangesAsync();
                 }
+
+                await _context.SaveChangesAsync();
                 return true; // Return true to indicate success
             }
             catch (Exception ex)
@@ -87,6 +97,7 @@ namespace DAL.Services
                 return false; // Return false if an exception occurs
             }
         }
+
 
 
 

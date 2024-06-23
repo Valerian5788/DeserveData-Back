@@ -23,7 +23,7 @@ namespace DeserveData_Back.Controllers
         [HttpPost("FetchDataTec")]
         public async Task<IActionResult> ImportBusStops()
         {
-            bool success = await _busStopRepository.ImportBusStopsFromFileTec();
+            bool success = await _busStopRepository.ImportBusStopsFromMultipleFiles();
             return success ? Ok("Data fetched and stored successfully") : BadRequest("Failed to fetch and store data");
         }
 

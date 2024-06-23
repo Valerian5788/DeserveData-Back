@@ -25,9 +25,9 @@ namespace BLL.Repository
             return retour;
         }
 
-        public Task<bool> ImportBusStopsFromFileTec()
+        public Task<bool> ImportBusStopsFromMultipleFiles()
         {
-            return _busStopService.ImportBusStopsFromFileTec();
+            return _busStopService.ImportBusStopsFromMultipleFiles();
         }
     }
 }

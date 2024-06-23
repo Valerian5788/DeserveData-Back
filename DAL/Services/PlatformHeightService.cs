@@ -75,14 +75,7 @@ namespace DAL.Services
 
                             var stations = await _context.stations.ToListAsync();
                             var matchingStation = stations
-                                .FirstOrDefault(s => NormalizeAndToUpper(s.name_fr) == normalizedPlatformNameFr);
-
-                            // If no matching station is found using the French name, try the Dutch name
-                            if (matchingStation == null)
-                            {
-                                matchingStation = stations
-                                    .FirstOrDefault(s => NormalizeAndToUpper(s.name_nl) == normalizedPlatformNameNl);
-                            }
+                                .FirstOrDefault(s => NormalizeAndToUpper(s.name_fr) == normalizedPlatformNameFr || NormalizeAndToUpper(s.name_nl) == normalizedPlatformNameNl);
 
                             if (matchingStation != null)
                             {
