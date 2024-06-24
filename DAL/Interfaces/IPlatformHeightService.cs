@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DAL.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,5 +10,6 @@ namespace DAL.Interfaces
     public interface IPlatformHeightService
     {
         Task<bool> FetchAndStoreAllPlatformData();
+        Task<List<Platforms>> GetAllPlatforms();
     }
 }

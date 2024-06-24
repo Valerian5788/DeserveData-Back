@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DAL.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240621123920_AddPlatformsTable")]
-    partial class AddPlatformsTable
+    [Migration("20240624084430_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -108,10 +108,14 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Platforms", b =>
                 {
-                    b.Property<string>("Id_Quai")
+                    b.Property<string>("Perron_Id")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Hauteur")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Id_Quai")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -126,11 +130,7 @@ namespace DAL.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Quai")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id_Quai");
+                    b.HasKey("Perron_Id");
 
                     b.HasIndex("Id_Station");
 
@@ -183,19 +183,19 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Platforms", b =>
                 {
-                    b.HasOne("DAL.Entities.Station", "Station")
-                        .WithMany()
+                    b.HasOne("DAL.Entities.Station", null)
+                        .WithMany("Platforms")
                         .HasForeignKey("Id_Station")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("DAL.Entities.Station", b =>
                 {
                     b.Navigation("Facilities")
                         .IsRequired();
+
+                    b.Navigation("Platforms");
                 });
 #pragma warning restore 612, 618
         }

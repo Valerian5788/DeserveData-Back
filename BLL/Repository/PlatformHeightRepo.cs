@@ -1,10 +1,7 @@
 ﻿using BLL.Interfaces;
+using DAL.Entities;
 using DAL.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace BLL.Repository
 {
@@ -18,6 +15,11 @@ namespace BLL.Repository
         public Task<bool> FetchAndStoreAllPlatformData()
         {
             return _platformHeightService.FetchAndStoreAllPlatformData();
+        }
+
+        public Task<List<Platforms>> GetAllPlatforms()
+        {
+            return _platformHeightService.GetAllPlatforms();
         }
     }
 }

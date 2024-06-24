@@ -180,19 +180,19 @@ namespace DAL.Migrations
 
             modelBuilder.Entity("DAL.Entities.Platforms", b =>
                 {
-                    b.HasOne("DAL.Entities.Station", "Station")
-                        .WithMany()
+                    b.HasOne("DAL.Entities.Station", null)
+                        .WithMany("Platforms")
                         .HasForeignKey("Id_Station")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("DAL.Entities.Station", b =>
                 {
                     b.Navigation("Facilities")
                         .IsRequired();
+
+                    b.Navigation("Platforms");
                 });
 #pragma warning restore 612, 618
         }

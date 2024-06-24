@@ -1,7 +1,12 @@
-﻿namespace DAL.Entities
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace DAL.Entities
 {
     public class Facilities
     {
+        [Key]
+        [ForeignKey("Id_Station")]
         public int Id_Station { get; set; }
         public bool PaidToilets { get; set; }
         public bool Taxi { get; set; }
@@ -19,9 +24,10 @@
         public bool BlueBikesPresence { get; set; } 
         public bool PMRAssistance { get; set; } 
         public bool LiftOnPlatform { get; set; }
-        // Navigation property back to Station
+
+        // Navigation property to Station
         public Station Station { get; set; }
 
-        // Additional properties can be added here based on further requirements
+
     }
 }

@@ -20,7 +20,7 @@ namespace DAL.AppDbContextFolder
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Station>()
-                .HasKey(s => s.Id_Station); 
+                .HasKey(s => s.Id_Station);
 
             modelBuilder.Entity<Facilities>()
                 .HasKey(f => f.Id_Station);
@@ -28,20 +28,20 @@ namespace DAL.AppDbContextFolder
             modelBuilder.Entity<BusStop>()
                 .HasKey(b => b.StopId);
 
-            // Configure the one-to-one relationship between Station and Facilities
-            modelBuilder.Entity<Station>()
-                .HasOne<Facilities>(s => s.Facilities) // Station has one Facilities
-                .WithOne(f => f.Station) // Facilities is associated with one Station
-                .HasForeignKey<Facilities>(f => f.Id_Station); // The foreign key in Facilities pointing to Station
-
             modelBuilder.Entity<Platforms>()
                 .HasKey(p => p.Perron_Id);
 
-            // Define the relationship between Platforms and Station
-            modelBuilder.Entity<Platforms>()
-                .HasOne(p => p.Station) // Platforms has one Station
-                .WithMany() // Station has many Platforms (or specify the collection if available)
-                .HasForeignKey(p => p.Id_Station); // The foreign key
+            // Configure the one-to-one relationship between Station and Facilities
+            modelBuilder.Entity<Station>()
+                .HasOne(s => s.Facilities) // Station has one Facilities
+                .WithOne(f => f.Station) // Facilities has one Station
+                .HasForeignKey<Facilities>(f => f.Id_Station); // Facilities contains the foreign key
+
+            modelBuilder.Entity<Station>()
+                .HasMany(p => p.Platforms) // Platforms has one Station
+                .WithOne() // Station has many Platforms (or you can specify the navigation property if available)
+                .HasForeignKey(p => p.Id_Station) // Use Id_Station as the foreign key
+                .IsRequired(); // Make the foreign key required if it should not be nullable
 
         }
     }

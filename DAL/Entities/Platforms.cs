@@ -15,7 +15,9 @@ namespace DAL.Entities
         public string Hauteur { get; set; }
         public string LongNameFrench { get; set; }
         public string LongNameDutch { get; set; }
+
+        [ForeignKey("Id_Station")]
         public int Id_Station { get; set; }
-        public Station Station { get; set; }
+
     }
 }

@@ -136,5 +136,13 @@ namespace DAL.Services
             public string Hauteur { get; set; }
         }
 
+
+        public async Task<List<Platforms>> GetAllPlatforms()
+        {
+            return await _context.platforms
+                .ToListAsync();
+        }
+
+
     }
 }

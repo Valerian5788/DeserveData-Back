@@ -26,7 +26,10 @@ namespace DAL.Services
 
         public async Task<IEnumerable<Station>> GetStationData()
         {
-            return await _context.stations.ToListAsync();
+            return await _context.stations
+                .Include(s => s.Facilities)
+                .Include(s => s.Platforms)
+                .ToListAsync();
         }
 
         public async Task<bool> FetchAndStoreStationsAsync(string lang)

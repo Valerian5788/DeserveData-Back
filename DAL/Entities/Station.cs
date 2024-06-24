@@ -14,5 +14,9 @@
 
         // Navigation property for the one-to-one relationship with Facilities
         public Facilities Facilities { get; set; }
+
+        // Navigation property for the one-to-many relationship with Platforms
+        public List<Platforms> Platforms { get; set; }
+
     }
 }
