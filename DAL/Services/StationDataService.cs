@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using System.Globalization;
 using System.Text;
+using DAL.DTO;
 
 
 namespace DAL.Services
@@ -24,13 +25,45 @@ namespace DAL.Services
 
 
 
-        public async Task<IEnumerable<Station>> GetStationData()
+        public async Task<IEnumerable<StationDataDTO>> GetStationData()
         {
-            return await _context.stations
+            var stations = await _context.stations
                 .Include(s => s.Facilities)
-                .Include(s => s.Platforms)
+                .Select(s => new StationDataDTO
+                {
+                    Id_Station = s.Id_Station,
+                    Official_Station_id = s.Official_Station_id,
+                    name_fr = s.name_fr,
+                    name_nl = s.name_nl,
+                    name_eng = s.name_eng,
+                    lon = s.lon,
+                    lat = s.lat,
+                    Facilities = s.Facilities == null ? null : new FacilitiesDTO
+                    {
+                        Id_Station = s.Id_Station,
+                        PaidToilets = s.Facilities.PaidToilets,
+                        Taxi = s.Facilities.Taxi,
+                        LuggageLockers = s.Facilities.LuggageLockers,
+                        FreeToilets = s.Facilities.FreeToilets,
+                        TVMCount = s.Facilities.TVMCount,
+                        Wifi = s.Facilities.Wifi,
+                        BikesPointPresence = s.Facilities.BikesPointPresence,
+                        CambioInformation = s.Facilities.CambioInformation,
+                        ConnectingBusesPresence = s.Facilities.ConnectingBusesPresence,
+                        ConnectingTramPresence = s.Facilities.ConnectingTramPresence,
+                        ParkingPlacesForPMR = s.Facilities.ParkingPlacesForPMR,
+                        PMRToilets = s.Facilities.PMRToilets,
+                        Escalator = s.Facilities.Escalator,
+                        BlueBikesPresence = s.Facilities.BlueBikesPresence,
+                        PMRAssistance = s.Facilities.PMRAssistance,
+                        LiftOnPlatform = s.Facilities.LiftOnPlatform,
+                    }
+                })
                 .ToListAsync();
+
+            return stations;
         }
+
 
         public async Task<bool> FetchAndStoreStationsAsync(string lang)
         {

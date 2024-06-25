@@ -1,4 +1,5 @@
-﻿using DAL.Entities;
+﻿using DAL.DTO;
+using DAL.Entities;
 
 namespace BLL.Interfaces
 {
@@ -6,7 +7,7 @@ namespace BLL.Interfaces
     {
         Task<bool> FetchAndStoreStationsAsync(string lang);
 
-        Task<IEnumerable<Station>> GetStationsData();
+        Task<IEnumerable<StationDataDTO>> GetStationsData();
         Task<bool> FetchAndStoreFacilitiesAsync();
     }
 }
