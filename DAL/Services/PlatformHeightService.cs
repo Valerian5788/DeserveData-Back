@@ -1,10 +1,7 @@
-﻿
-
-using DAL.AppDbContextFolder;
+﻿using DAL.AppDbContextFolder;
 using DAL.Entities;
 using DAL.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Buffers.Text;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -86,8 +83,6 @@ namespace DAL.Services
                                     {
                                         Perron_Id = platformData.perron_id,
                                         Id_Quai = platformData.Quai,
-                                        LongNameDutch = platformData.LongNameDutch,
-                                        LongNameFrench = platformData.LongNameFrench,
                                         Hauteur = platformData.Hauteur,
                                         Id_Station = matchingStation.Id_Station
                                     };

@@ -13,8 +13,6 @@ namespace DAL.Entities
         public string Perron_Id { get; set; }
         public string Id_Quai { get; set; }
         public string Hauteur { get; set; }
-        public string LongNameFrench { get; set; }
-        public string LongNameDutch { get; set; }
 
         [ForeignKey("Id_Station")]
         public int Id_Station { get; set; }
