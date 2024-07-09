@@ -11,8 +11,10 @@ using DAL.DTO;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 using Microsoft.Extensions.Logging;
-using Microsoft.ML.Runtime;
-using System.Reflection;
+using Microsoft.ML.Transforms;
+using static DAL.Services.StationDataService;
+
+
 
 
 namespace DAL.Services
@@ -23,6 +25,7 @@ namespace DAL.Services
         private readonly HttpClient _httpClient;
         private readonly MLContext _mlContext;
         private readonly ILogger<StationDataService> _logger;
+        private static bool _isMappingRegistered = false;
 
         public StationDataService(AppDbContext context, HttpClient httpClient, ILogger<StationDataService> logger)
         {
@@ -33,7 +36,7 @@ namespace DAL.Services
             RegisterCustomMapping();
         }
 
-
+        //other methods
 
         public async Task<IEnumerable<StationDataDTO>> GetStationData()
         {
@@ -324,13 +327,7 @@ namespace DAL.Services
         {
             var dataProcessPipeline = _mlContext.Transforms.Categorical.OneHotEncoding("ZoneEncoded", "zone")
                 .Append(_mlContext.Transforms.CustomMapping<StationDataCSV, StationDataCSVTransformed>(
-                    (input, output) =>
-                    {
-                        output.Hour = input.timestamp.Hour;
-                        output.DayOfWeek = (float)input.timestamp.DayOfWeek;
-                        output.Zone = input.zone;
-                        output.Total = input.total;
-                    }, "CustomMapping"))
+                    new StationDataCSVTransformedMapping().GetMapping(), "CustomMapping"))
                 .Append(_mlContext.Transforms.Concatenate("Features", "Hour", "DayOfWeek", "ZoneEncoded"))
                 .Append(_mlContext.Transforms.CopyColumns("Label", "Total"));
 
@@ -339,33 +336,53 @@ namespace DAL.Services
 
             var model = trainingPipeline.Fit(data);
 
-            // Save the model to a file
             _mlContext.Model.Save(model, data.Schema, modelPath);
 
             return model;
         }
 
-        public ITransformer LoadModel(string modelPath)
-        {
-            RegisterCustomMapping(); // Ensure registration happens before loading the model
-            DataViewSchema modelSchema;
-            var model = _mlContext.Model.Load(modelPath, out modelSchema);
-            return model;
-        }
 
         private void RegisterCustomMapping()
         {
+            if (!_isMappingRegistered)
+            {
+                try
+                {
+                    var assembly = typeof(StationDataCSVTransformedMapping).Assembly;
+                    _mlContext.ComponentCatalog.RegisterAssembly(assembly);
+                    _isMappingRegistered = true;
+                    Console.WriteLine($"Successfully registered assembly: {assembly.FullName}");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Failed to register custom mapping: {ex.Message}");
+                    Console.WriteLine($"Failed to register custom mapping: {ex.Message}");
+                    throw;
+                }
+            }
+        }
+
+
+        public ITransformer LoadModel(string modelPath)
+        {
+            RegisterCustomMapping();
+            Console.WriteLine("load model, mapping registered: " + _isMappingRegistered);
+
+            DataViewSchema modelSchema;
             try
             {
-                // Register the assembly containing the custom mapping class
-                _mlContext.ComponentCatalog.RegisterAssembly(typeof(StationDataCSVTransformed).Assembly);
+                var model = _mlContext.Model.Load(modelPath, out modelSchema);
+                Console.WriteLine("Model loaded successfully.");
+                return model;
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Failed to register custom mapping: {ex.Message}");
+                _logger.LogError($"Failed to load model: {ex.Message}");
+                Console.WriteLine($"Failed to load model: {ex.Message}");
                 throw;
             }
         }
+
 
 
         public void EvaluateModel(string[] filePaths, string modelPath)
@@ -413,6 +430,19 @@ namespace DAL.Services
         {
             [ColumnName("Score")]
             public float Total { get; set; }
+        }
+    }
+    public class StationDataCSVTransformedMapping : CustomMappingFactory<StationDataCSV, StationDataCSVTransformed>
+    {
+        public override Action<StationDataCSV, StationDataCSVTransformed> GetMapping()
+        {
+            return (input, output) =>
+            {
+                output.Hour = input.timestamp.Hour;
+                output.DayOfWeek = (float)input.timestamp.DayOfWeek;
+                output.Zone = input.zone;
+                output.Total = input.total;
+            };
         }
     }
 }
