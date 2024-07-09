@@ -8,6 +8,11 @@ using System.Text.Json;
 using System.Globalization;
 using System.Text;
 using DAL.DTO;
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using Microsoft.Extensions.Logging;
+using Microsoft.ML.Runtime;
+using System.Reflection;
 
 
 namespace DAL.Services
@@ -16,11 +21,16 @@ namespace DAL.Services
     {
         private readonly AppDbContext _context;
         private readonly HttpClient _httpClient;
+        private readonly MLContext _mlContext;
+        private readonly ILogger<StationDataService> _logger;
 
-        public StationDataService(AppDbContext context, HttpClient httpClient)
+        public StationDataService(AppDbContext context, HttpClient httpClient, ILogger<StationDataService> logger)
         {
             _context = context;
             _httpClient = httpClient;
+            _mlContext = new MLContext();
+            _logger = logger;
+            RegisterCustomMapping();
         }
 
 
@@ -77,14 +87,14 @@ namespace DAL.Services
                 {
                     foreach (var stationData in response.Station)
                     {
-                        var existingStation = await _context.stations.FirstOrDefaultAsync(s => s.Official_Station_id == stationData.id); // Assuming each station has a unique Id
+                        var existingStation = await _context.stations.FirstOrDefaultAsync(s => s.Official_Station_id == stationData.Id); // Assuming each station has a unique Id
 
                         if (existingStation == null)
                         {
                             // If the station doesn't exist, create a new one
                             existingStation = new Station
                             {
-                                Official_Station_id = stationData.id,
+                                Official_Station_id = stationData.Id,
                                 lon = stationData.locationX,
                                 lat = stationData.locationY
                             };
@@ -95,13 +105,13 @@ namespace DAL.Services
                         switch (lang.ToLower())
                         {
                             case "fr":
-                                existingStation.name_fr = stationData.name;
+                                existingStation.name_fr = stationData.Name;
                                 break;
                             case "en":
-                                existingStation.name_eng = stationData.name;
+                                existingStation.name_eng = stationData.Name;
                                 break;
                             case "nl":
-                                existingStation.name_nl = stationData.name;
+                                existingStation.name_nl = stationData.Name;
                                 break;
                         }
                     }
@@ -132,8 +142,11 @@ namespace DAL.Services
 
         private class StationData
         {
-            public string id { get; set; }
-            public string name { get; set; }
+            [JsonPropertyName("id")]
+            public string Id { get; set; }
+
+            [JsonPropertyName("name")]
+            public string Name { get; set; }
             public float locationX { get; set; }
             public float locationY { get; set; }
         }
@@ -270,6 +283,136 @@ namespace DAL.Services
         {
             public string name { get; set; }
             public string value { get; set; }
+        }
+
+        //ml
+        public IDataView LoadData(string[] filePaths)
+        {
+            var data = new List<StationDataCSV>();
+
+            foreach (var filePath in filePaths)
+            {
+                var lines = File.ReadAllLines(filePath).Skip(1); // Skip header
+                foreach (var line in lines)
+                {
+                    var values = line.Split(',');
+                    if (values.Length == 3)
+                    {
+                        data.Add(new StationDataCSV
+                        {
+                            timestamp = DateTime.ParseExact(values[0], "dd/MM/yyyy HH:mm:ss", CultureInfo.InvariantCulture),
+                            zone = values[1],
+                            total = float.Parse(values[2])
+                        });
+                    }
+                }
+            }
+
+            var dataView = _mlContext.Data.LoadFromEnumerable(data);
+
+            // Log the schema
+            Console.WriteLine("Schema of the loaded data:");
+            foreach (var column in dataView.Schema)
+            {
+                Console.WriteLine($"{column.Name}: {column.Type}");
+            }
+
+            return dataView;
+        }
+
+        public ITransformer TrainModel(IDataView data, string modelPath)
+        {
+            var dataProcessPipeline = _mlContext.Transforms.Categorical.OneHotEncoding("ZoneEncoded", "zone")
+                .Append(_mlContext.Transforms.CustomMapping<StationDataCSV, StationDataCSVTransformed>(
+                    (input, output) =>
+                    {
+                        output.Hour = input.timestamp.Hour;
+                        output.DayOfWeek = (float)input.timestamp.DayOfWeek;
+                        output.Zone = input.zone;
+                        output.Total = input.total;
+                    }, "CustomMapping"))
+                .Append(_mlContext.Transforms.Concatenate("Features", "Hour", "DayOfWeek", "ZoneEncoded"))
+                .Append(_mlContext.Transforms.CopyColumns("Label", "Total"));
+
+            var trainer = _mlContext.Regression.Trainers.Sdca(labelColumnName: "Label", featureColumnName: "Features");
+            var trainingPipeline = dataProcessPipeline.Append(trainer);
+
+            var model = trainingPipeline.Fit(data);
+
+            // Save the model to a file
+            _mlContext.Model.Save(model, data.Schema, modelPath);
+
+            return model;
+        }
+
+        public ITransformer LoadModel(string modelPath)
+        {
+            RegisterCustomMapping(); // Ensure registration happens before loading the model
+            DataViewSchema modelSchema;
+            var model = _mlContext.Model.Load(modelPath, out modelSchema);
+            return model;
+        }
+
+        private void RegisterCustomMapping()
+        {
+            try
+            {
+                // Register the assembly containing the custom mapping class
+                _mlContext.ComponentCatalog.RegisterAssembly(typeof(StationDataCSVTransformed).Assembly);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Failed to register custom mapping: {ex.Message}");
+                throw;
+            }
+        }
+
+
+        public void EvaluateModel(string[] filePaths, string modelPath)
+        {
+            var data = LoadData(filePaths);
+            var model = LoadModel(modelPath);
+            var predictions = model.Transform(data);
+            var metrics = _mlContext.Regression.Evaluate(predictions, labelColumnName: "Label", scoreColumnName: "Score");
+
+            _logger.LogInformation($"R^2: {metrics.RSquared}");
+            _logger.LogInformation($"Mean Absolute Error: {metrics.MeanAbsoluteError}");
+            _logger.LogInformation($"Mean Squared Error: {metrics.MeanSquaredError}");
+            _logger.LogInformation($"Root Mean Squared Error: {metrics.RootMeanSquaredError}");
+        }
+
+        public StationDataPrediction MakePrediction(string modelPath, StationDataCSV sampleData)
+        {
+            var model = LoadModel(modelPath);
+            var predictionEngine = _mlContext.Model.CreatePredictionEngine<StationDataCSV, StationDataPrediction>(model);
+            var prediction = predictionEngine.Predict(sampleData);
+            return prediction;
+        }
+
+        public class StationDataCSV
+        {
+            [LoadColumn(0)]
+            public DateTime timestamp { get; set; }
+
+            [LoadColumn(1)]
+            public string zone { get; set; }
+
+            [LoadColumn(2)]
+            public float total { get; set; }
+        }
+
+        public class StationDataCSVTransformed
+        {
+            public float Hour { get; set; }
+            public float DayOfWeek { get; set; }
+            public string Zone { get; set; }
+            public float Total { get; set; }
+        }
+
+        public class StationDataPrediction
+        {
+            [ColumnName("Score")]
+            public float Total { get; set; }
         }
     }
 }
