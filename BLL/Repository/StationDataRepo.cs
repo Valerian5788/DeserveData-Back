@@ -47,5 +47,6 @@ namespace BLL.Repository
         {
             return _stationDataService.MakePrediction(modelPath, sampleData);
         }
+
     }
 }

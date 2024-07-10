@@ -25,7 +25,7 @@ namespace DAL.Services
         private readonly HttpClient _httpClient;
         private readonly MLContext _mlContext;
         private readonly ILogger<StationDataService> _logger;
-        private static bool _isMappingRegistered = false;
+
 
         public StationDataService(AppDbContext context, HttpClient httpClient, ILogger<StationDataService> logger)
         {
@@ -33,7 +33,6 @@ namespace DAL.Services
             _httpClient = httpClient;
             _mlContext = new MLContext();
             _logger = logger;
-            RegisterCustomMapping();
         }
 
         //other methods
@@ -289,6 +288,7 @@ namespace DAL.Services
         }
 
         //ml
+        // Load data from CSV files
         public IDataView LoadData(string[] filePaths)
         {
             var data = new List<StationDataCSV>();
@@ -320,16 +320,24 @@ namespace DAL.Services
                 Console.WriteLine($"{column.Name}: {column.Type}");
             }
 
+            // Print the data
+            Console.WriteLine("Data:");
+            foreach (var record in data)
+            {
+                Console.WriteLine($"Timestamp: {record.timestamp}, Zone: {record.zone}, Total: {record.total}");
+            }
+
             return dataView;
         }
 
+
+        // Train the model without custom mapping
         public ITransformer TrainModel(IDataView data, string modelPath)
         {
-            var dataProcessPipeline = _mlContext.Transforms.Categorical.OneHotEncoding("ZoneEncoded", "zone")
-                .Append(_mlContext.Transforms.CustomMapping<StationDataCSV, StationDataCSVTransformed>(
-                    new StationDataCSVTransformedMapping().GetMapping(), "CustomMapping"))
-                .Append(_mlContext.Transforms.Concatenate("Features", "Hour", "DayOfWeek", "ZoneEncoded"))
-                .Append(_mlContext.Transforms.CopyColumns("Label", "Total"));
+            var dataProcessPipeline = _mlContext.Transforms.Conversion.ConvertType("timestamp", "timestamp", DataKind.Single)
+                .Append(_mlContext.Transforms.Categorical.OneHotEncoding("ZoneEncoded", "zone"))
+                .Append(_mlContext.Transforms.Concatenate("Features", "timestamp", "ZoneEncoded"))
+                .Append(_mlContext.Transforms.CopyColumns("Label", "total"));
 
             var trainer = _mlContext.Regression.Trainers.Sdca(labelColumnName: "Label", featureColumnName: "Features");
             var trainingPipeline = dataProcessPipeline.Append(trainer);
@@ -337,37 +345,14 @@ namespace DAL.Services
             var model = trainingPipeline.Fit(data);
 
             _mlContext.Model.Save(model, data.Schema, modelPath);
+            Console.WriteLine($"Model without custom mapping saved to: {modelPath}");
 
             return model;
         }
 
 
-        private void RegisterCustomMapping()
-        {
-            if (!_isMappingRegistered)
-            {
-                try
-                {
-                    var assembly = typeof(StationDataCSVTransformedMapping).Assembly;
-                    _mlContext.ComponentCatalog.RegisterAssembly(assembly);
-                    _isMappingRegistered = true;
-                    Console.WriteLine($"Successfully registered assembly: {assembly.FullName}");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Failed to register custom mapping: {ex.Message}");
-                    Console.WriteLine($"Failed to register custom mapping: {ex.Message}");
-                    throw;
-                }
-            }
-        }
-
-
         public ITransformer LoadModel(string modelPath)
         {
-            RegisterCustomMapping();
-            Console.WriteLine("load model, mapping registered: " + _isMappingRegistered);
-
             DataViewSchema modelSchema;
             try
             {
@@ -383,8 +368,7 @@ namespace DAL.Services
             }
         }
 
-
-
+        // Evaluate the model
         public void EvaluateModel(string[] filePaths, string modelPath)
         {
             var data = LoadData(filePaths);
@@ -398,6 +382,7 @@ namespace DAL.Services
             _logger.LogInformation($"Root Mean Squared Error: {metrics.RootMeanSquaredError}");
         }
 
+        // Make a prediction
         public StationDataPrediction MakePrediction(string modelPath, StationDataCSV sampleData)
         {
             var model = LoadModel(modelPath);
@@ -429,20 +414,8 @@ namespace DAL.Services
         public class StationDataPrediction
         {
             [ColumnName("Score")]
-            public float Total { get; set; }
+            public float total { get; set; }
         }
     }
-    public class StationDataCSVTransformedMapping : CustomMappingFactory<StationDataCSV, StationDataCSVTransformed>
-    {
-        public override Action<StationDataCSV, StationDataCSVTransformed> GetMapping()
-        {
-            return (input, output) =>
-            {
-                output.Hour = input.timestamp.Hour;
-                output.DayOfWeek = (float)input.timestamp.DayOfWeek;
-                output.Zone = input.zone;
-                output.Total = input.total;
-            };
-        }
-    }
+
 }

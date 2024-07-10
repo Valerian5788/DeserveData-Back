@@ -14,5 +14,6 @@ namespace DAL.Interfaces
         ITransformer TrainModel(IDataView data, string modelPath);
         void EvaluateModel(string[] filePaths, string modelPath);
         StationDataService.StationDataPrediction MakePrediction(string modelPath, StationDataService.StationDataCSV sampleData);
+
     }
 }

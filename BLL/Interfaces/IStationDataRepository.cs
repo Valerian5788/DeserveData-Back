@@ -13,5 +13,6 @@ namespace BLL.Interfaces
         void TrainModel(string[] filePaths, string modelPath);
         string EvaluateModel(string[] filePaths, string modelPath);
         StationDataService.StationDataPrediction MakePrediction(StationDataService.StationDataCSV sampleData, string modelPath);
+
     }
 }
