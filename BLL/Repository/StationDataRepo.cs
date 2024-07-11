@@ -30,23 +30,6 @@ namespace BLL.Repository
         {
             return await _stationDataService.FetchAndStoreFacilitiesAsync();
         }
-
-        public void TrainModel(string[] filePaths, string modelPath)
-        {
-            var data = _stationDataService.LoadData(filePaths);
-            _stationDataService.TrainModel(data, modelPath);
-        }
-
-        public string EvaluateModel(string[] filePaths, string modelPath)
-        {
-            _stationDataService.EvaluateModel(filePaths, modelPath);
-            return "Model evaluated successfully";
-        }
-
-        public StationDataService.StationDataPrediction MakePrediction(StationDataService.StationDataCSV sampleData, string modelPath)
-        {
-            return _stationDataService.MakePrediction(modelPath, sampleData);
-        }
-
+        
     }
 }

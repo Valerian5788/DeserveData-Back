@@ -9,7 +9,6 @@ namespace DeserveData_Back.Controllers
     public class DataController : Controller
     {
         private readonly IStationDataRepository _stationDataRepository;
-        private readonly string _modelPath = "C:\\Users\\User\\Documents\\DeserveData\\Back\\DAL\\Intern Data\\model.zip"; // Define the model path
 
         public DataController(IStationDataRepository stationDataRepository)
         {
@@ -37,27 +36,7 @@ namespace DeserveData_Back.Controllers
             bool result = await _stationDataRepository.FetchAndStoreFacilitiesAsync();
             return result ? Ok("Data fetched and stored successfully") : BadRequest("Failed to fetch and store data");
         }
-        [HttpPost("TrainModel")]
-        public IActionResult TrainModel([FromBody] string[] filePaths)
-        {
-            _stationDataRepository.TrainModel(filePaths, _modelPath);
-            return Ok("Model trained and saved.");
-        }
-
-
-        [HttpPost("EvaluateModel")]
-        public IActionResult EvaluateModel([FromBody] string[] filePaths)
-        {
-            var result = _stationDataRepository.EvaluateModel(filePaths, _modelPath);
-            return Ok(result);
-        }
-
-        [HttpPost("MakePrediction")]
-        public IActionResult MakePrediction([FromBody] StationDataService.StationDataCSV sampleData)
-        {
-            var prediction = _stationDataRepository.MakePrediction(sampleData, _modelPath);
-            return Ok(prediction);
-        }
+        
 
     }
 }

@@ -28,6 +28,10 @@ builder.Services.AddScoped<IBusStopService, BusStopService>();
 builder.Services.AddScoped<IBusStopRepository, BusStopRepo>();
 builder.Services.AddScoped<IPlatformHeightRepository, PlatformHeightRepo>();
 builder.Services.AddScoped<IPlatformHeightService, PlatformHeightService>();
+builder.Services.AddScoped<IMachineLearningService, MachineLearningService>();
+builder.Services.AddScoped<IMLRepository, MachineLearningRepo>();
+builder.Services.AddScoped<IUserRepository, UserRepo>();
+builder.Services.AddScoped<IUserService, UserService>();
 
 
 

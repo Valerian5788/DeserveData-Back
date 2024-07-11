@@ -10,10 +10,6 @@ namespace DAL.Interfaces
         Task<bool> FetchAndStoreStationsAsync(string lang);
         Task<IEnumerable<StationDataDTO>> GetStationData();
         Task<bool> FetchAndStoreFacilitiesAsync();
-        IDataView LoadData(string[] filePaths);
-        ITransformer TrainModel(IDataView data, string modelPath);
-        void EvaluateModel(string[] filePaths, string modelPath);
-        StationDataService.StationDataPrediction MakePrediction(string modelPath, StationDataService.StationDataCSV sampleData);
 
     }
 }

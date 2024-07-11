@@ -12,12 +12,10 @@
 
   <ItemGroup>
     <Folder Include="Global using\" />
-    <Folder Include="HashPassword\" />
-    <Folder Include="Mappers\" />
-    <Folder Include="TokenManager\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="Microsoft.ML" Version="3.0.1" />
   </ItemGroup>
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using DAL.Entities;
-using Microsoft.IdentityModel.Abstractions;
 
 namespace DAL.AppDbContextFolder
 {
@@ -12,6 +11,8 @@ namespace DAL.AppDbContextFolder
         public DbSet<BusStop> busStop { get; set; }
 
         public DbSet<Platforms> platforms { get; set; }
+
+        public DbSet<User> users { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -43,6 +44,8 @@ namespace DAL.AppDbContextFolder
                 .HasForeignKey(p => p.Id_Station) // Use Id_Station as the foreign key
                 .IsRequired(); // Make the foreign key required if it should not be nullable
 
+            modelBuilder.Entity<User>()
+                .HasKey(u => u.Email);
         }
     }
 }
