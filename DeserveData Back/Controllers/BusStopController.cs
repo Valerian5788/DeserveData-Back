@@ -1,4 +1,5 @@
 ﻿using BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers
@@ -21,6 +22,7 @@ namespace DeserveData_Back.Controllers
         }
 
         [HttpPost("FetchDataTec")]
+        [Authorize("Admin")]
         public async Task<IActionResult> ImportBusStops()
         {
             bool success = await _busStopRepository.ImportBusStopsFromMultipleFiles();

@@ -1,4 +1,5 @@
 ﻿using BLL.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers
@@ -15,6 +16,7 @@ namespace DeserveData_Back.Controllers
         }
 
         [HttpPost("FetchData")]
+        [Authorize("Admin")]
         public async Task<IActionResult> FetchAndStoreAllPlatformData()
         {
             bool result = await _platformHeightRepository.FetchAndStoreAllPlatformData(); 

@@ -1,5 +1,6 @@
 ﻿using BLL.Interfaces;
 using DAL.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers
@@ -17,6 +18,7 @@ namespace DeserveData_Back.Controllers
         }
 
         [HttpPost("TrainModel")]
+        [Authorize("Admin")]
         public IActionResult TrainModel([FromBody] string[] filePaths)
         {
             _MachineLearningRepository.TrainModel(filePaths, _modelPath);

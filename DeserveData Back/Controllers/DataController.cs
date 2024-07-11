@@ -1,5 +1,6 @@
 ﻿using BLL.Interfaces;
 using DAL.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers
@@ -16,6 +17,7 @@ namespace DeserveData_Back.Controllers
         }
 
         [HttpPost("StoreStationData/{lang}")]
+        [Authorize("Admin")]
         public async Task<IActionResult> FetchStationsData_Fr(string lang)
         {
             bool result = await _stationDataRepository.FetchAndStoreStationsAsync(lang);

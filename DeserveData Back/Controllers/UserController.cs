@@ -16,6 +16,7 @@ namespace DeserveData_Back.Controllers
             _userRepositoryBLL = userRepositoryBLL;
         }
         [HttpPost("CreateUser")]
+        [Authorize("Admin")]
         public IActionResult CreateUser(CreateUserForm form)
         {
             if (!ModelState.IsValid)
@@ -25,6 +26,7 @@ namespace DeserveData_Back.Controllers
             return Ok(_userRepositoryBLL.CreateUser(form));
         }
         [HttpGet("GetUserByEmail/{email}")]
+        [Authorize("Admin")]
         public IActionResult GetUserByEmail(string email)
         {
             if (!ModelState.IsValid)
@@ -35,7 +37,7 @@ namespace DeserveData_Back.Controllers
             return Ok(user);
         }
         [HttpGet("GetAllUser")]
-        [Authorize("Connected")]
+        [Authorize("Admin")]
         public IActionResult GetAllUser()
         {
             if (!ModelState.IsValid)
@@ -55,6 +57,7 @@ namespace DeserveData_Back.Controllers
             return Ok(_userRepositoryBLL.UpdatePassword(form));
         }
         [HttpDelete("DeleteUser/{email}")]
+        [Authorize("Admin")]
         public IActionResult DeleteUser(string email)
         {
             if (!ModelState.IsValid)
