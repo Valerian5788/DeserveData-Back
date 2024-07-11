@@ -21,6 +21,7 @@ namespace BLL.TokenManager
             Claim[] myclaims = new[]
             {
                 new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Role, user.Role),
                 new Claim(ClaimTypes.Email, user.Email.ToString())
             };
             JwtSecurityToken token = new JwtSecurityToken(

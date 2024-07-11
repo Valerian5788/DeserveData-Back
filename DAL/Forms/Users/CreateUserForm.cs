@@ -29,5 +29,8 @@ namespace DAL.Forms.Users
         public string AdressCity { get; set; }
         [Required]
         public int AdressPostalCode { get; set; }
+
+        [Required]
+        public string Role { get; set; }
     }
 }

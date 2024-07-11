@@ -1,6 +1,7 @@
 ﻿using BLL.Interfaces;
 using DAL.Entities;
 using DAL.Forms.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeserveData_Back.Controllers
@@ -34,6 +35,7 @@ namespace DeserveData_Back.Controllers
             return Ok(user);
         }
         [HttpGet("GetAllUser")]
+        [Authorize("Connected")]
         public IActionResult GetAllUser()
         {
             if (!ModelState.IsValid)
@@ -42,6 +44,7 @@ namespace DeserveData_Back.Controllers
             }
             return Ok(_userRepositoryBLL.GetAllUser());
         }
+
         [HttpPatch("UpdatePassword")]
         public IActionResult UpdatePassword(UpdatePasswordForm form)
         {

@@ -24,5 +24,9 @@ namespace DAL.Entities
         public string AdressCity { get; set; }
         [Required]
         public int AdressPostalCode { get; set; }
+
+        //admin or other
+        [Required]
+        public string Role { get; set; }
     }
 }

@@ -18,7 +18,8 @@ namespace BLL.Mappers
                 AdressStreet = form.AdressStreet,
                 AdressNumber = form.AdressNumber,
                 AdressCity = form.AdressCity,
-                AdressPostalCode = form.AdressPostalCode
+                AdressPostalCode = form.AdressPostalCode,
+                Role = form.Role
             };
         }
     }
