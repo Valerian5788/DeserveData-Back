@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dal.test
+namespace BLL.Interfaces
 {
-    internal class StationDataServiceTest
+    public interface IFeedbackRepository
     {
     }
 }
