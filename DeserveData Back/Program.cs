@@ -64,11 +64,10 @@ builder.Services.AddScoped<IMLRepository, MachineLearningRepo>();
 builder.Services.AddScoped<IUserRepository, UserRepo>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IScoreRepository, ScoreRepo>();
-builder.Services.AddScoped<IScoreInterface, ScoreService>();
+builder.Services.AddScoped<IScoreService, ScoreService>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepo>();
 builder.Services.AddScoped<IFeedBackService, FeedbackService>();
-builder.Services.AddScoped<IFeedbackRepository, FeedbackRepo>();
-builder.Services.AddScoped<IFeedBackService, FeedbackService>();
+
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -1,13 +1,25 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using BLL.Interfaces;
+using System.Threading.Tasks;
 
 namespace DeserveData_Back.Controllers
 {
-
-    public class ScoreController : Controller
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ScoreController : ControllerBase
     {
-        public IActionResult Index()
+        private readonly IScoreRepository _scoreRepository;
+
+        public ScoreController(IScoreRepository scoreRepository)
         {
-            return View();
+            _scoreRepository = scoreRepository;
+        }
+
+        [HttpGet("{stationId}")]
+        public async Task<IActionResult> GetStationScore(int stationId)
+        {
+            var score = await _scoreRepository.GetStationScore(stationId);
+            return Ok(new { StationId = stationId, Score = score });
         }
     }
 }
