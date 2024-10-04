@@ -67,6 +67,8 @@ builder.Services.AddScoped<IScoreRepository, ScoreRepo>();
 builder.Services.AddScoped<IScoreInterface, ScoreService>();
 builder.Services.AddScoped<IFeedbackRepository, FeedbackRepo>();
 builder.Services.AddScoped<IFeedBackService, FeedbackService>();
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepo>();
+builder.Services.AddScoped<IFeedBackService, FeedbackService>();
 
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

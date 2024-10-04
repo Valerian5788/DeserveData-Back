@@ -7,17 +7,15 @@ namespace DAL.AppDbContextFolder
     {
         public DbSet<Station> stations { get; set; }
         public DbSet<Facilities> facilities { get; set; }
-
         public DbSet<BusStop> busStop { get; set; }
-
         public DbSet<Platforms> platforms { get; set; }
-
         public DbSet<User> users { get; set; }
+        public DbSet<FeedbackModel> Feedbacks { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
-
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Station>()
@@ -32,20 +30,35 @@ namespace DAL.AppDbContextFolder
             modelBuilder.Entity<Platforms>()
                 .HasKey(p => p.Perron_Id);
 
-            // Configure the one-to-one relationship between Station and Facilities
             modelBuilder.Entity<Station>()
-                .HasOne(s => s.Facilities) // Station has one Facilities
-                .WithOne(f => f.Station) // Facilities has one Station
-                .HasForeignKey<Facilities>(f => f.Id_Station); // Facilities contains the foreign key
+                .HasOne(s => s.Facilities)
+                .WithOne(f => f.Station)
+                .HasForeignKey<Facilities>(f => f.Id_Station);
 
             modelBuilder.Entity<Station>()
-                .HasMany(p => p.Platforms) // Platforms has one Station
-                .WithOne() // Station has many Platforms (or you can specify the navigation property if available)
-                .HasForeignKey(p => p.Id_Station) // Use Id_Station as the foreign key
-                .IsRequired(); // Make the foreign key required if it should not be nullable
+                .HasMany(p => p.Platforms)
+                .WithOne()
+                .HasForeignKey(p => p.Id_Station)
+                .IsRequired();
 
             modelBuilder.Entity<User>()
                 .HasKey(u => u.Email);
+
+            // Configure FeedbackModel
+            modelBuilder.Entity<FeedbackModel>()
+                .HasKey(f => f.Id);
+
+            modelBuilder.Entity<FeedbackModel>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<FeedbackModel>()
+                .HasOne<Station>()
+                .WithMany()
+                .HasForeignKey(f => f.StationId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
