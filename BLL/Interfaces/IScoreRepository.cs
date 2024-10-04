@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace BLL.Interfaces
 {
     public interface IScoreRepository
     {
-        Task<double> GetStationScore(int stationId);
+        Task<double> GetStationScore(int stationId, DateTime predictionTime);
     }
 }

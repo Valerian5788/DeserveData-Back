@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BLL.Interfaces;
+using System;
 using System.Threading.Tasks;
 
 namespace DeserveData_Back.Controllers
@@ -16,10 +17,11 @@ namespace DeserveData_Back.Controllers
         }
 
         [HttpGet("{stationId}")]
-        public async Task<IActionResult> GetStationScore(int stationId)
+        public async Task<IActionResult> GetStationScore(int stationId, [FromQuery] DateTime? predictionTime = null)
         {
-            var score = await _scoreRepository.GetStationScore(stationId);
-            return Ok(new { StationId = stationId, Score = score });
+            var time = predictionTime ?? DateTime.Now;
+            var score = await _scoreRepository.GetStationScore(stationId, time);
+            return Ok(new { StationId = stationId, Score = score, PredictionTime = time });
         }
     }
 }

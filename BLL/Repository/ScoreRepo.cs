@@ -13,9 +13,9 @@ namespace BLL.Repository
             _scoreService = scoreService;
         }
 
-        public async Task<double> GetStationScore(int stationId)
+        public async Task<double> GetStationScore(int stationId, DateTime predictionTime)
         {
-            return await _scoreService.CalculateStationScore(stationId);
+            return await _scoreService.CalculateStationScore(stationId, predictionTime);
         }
     }
 }

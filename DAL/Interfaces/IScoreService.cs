@@ -4,6 +4,6 @@ namespace DAL.Interfaces
 {
     public interface IScoreService
     {
-        Task<double> CalculateStationScore(int stationId);
+        Task<double> CalculateStationScore(int stationId, DateTime predictionTime);
     }
 }
